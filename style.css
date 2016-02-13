@@ -1,14 +1,14 @@
 #background{
-  position: absolute;
+    position: absolute;
 	left: 0;
-	top: 0;
+	top:  0;
 	margin: 0;
 	padding: 0;
 	width: 1024px;
 	height: 768px;
-  background: black;
-  -webkit-transform: translate3d(0,0,0);
-  -webkit-user-select: none;
+    background: black;
+    -webkit-transform: translate3d(0,0,0);
+    -webkit-user-select: none;
 }
 
 #canvas{
@@ -19,19 +19,6 @@
   padding: 0;
   width: 1024px;
   height: 768px;
-  background: transparent;
-  -webkit-transform: translate3d(0,0,0);
-  -webkit-user-select: none;
-}
-
-#topbar{
-  position: absolute;
-  left: 0;
-  top: 0;
-  margin: 0;
-  padding: 0;
-  width: 1024px;
-  height: 100px;
   background: transparent;
   -webkit-transform: translate3d(0,0,0);
   -webkit-user-select: none;

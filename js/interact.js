@@ -1,174 +1,214 @@
 
-var fc = 0;
-var blobs = [];
-var shake = 0;
-var canvas;
-var context;
-var updateLoop;
-var background;
-var touch = {down:false,x:0,y:0,time:0};
-var image;
-
-var text = true;
-
-
-function Blob(x,y){
-    this.hx = x;
-    this.hy = y;
-    this.x = random(0,1024);
-    this.y = random(0,768);
-    this.r = random(4,15)
-    this.speed = random(0.015,0.03);
-
-    this.minix = this.x*0.01;
-    this.miniy = this.y*0.01;
-    this.off = this.hx*0.01 + this.hy *0.01 + random(-1,1);
-    this.halfr = this.r * 0.5;
-
-    this.update = function(){
-        this.x += (this.hx - this.x) * this.speed;
-        this.y += (this.hy - this.y) * this.speed;
-        var r = this.r + sin(this.off + fc) * this.halfr;
-        solidRect(context, this.x-r/2, this.y-r/2, r,   r  );
-    }
+function extend(){
+    for(var i=1; i<arguments.length; i++)
+        for(var key in arguments[i])
+            if(arguments[i].hasOwnProperty(key))
+                arguments[0][key] = arguments[i][key];
+    return arguments[0];
 }
 
-function update(){
-    updateLoop = webkitRequestAnimationFrame(update);
-    fc+=0.1;
 
-    shake = random(-3,3);
+var SHIMMER = (function( ){
 
-    var removers = [];
+    var frameCount = 0;
+    var blobs = [];
+    var canvas;
+    var context;
+    var updateLoop;
+    var touch;
+    var image;
+    var shimmer = {};
+    var options = {};
 
-    context.clearRect(0,0,1024,768);
+    function distance(x1, y1, x2, y2) {
+        return Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2));
+    }
 
-    if(touch.down && touch.time < 59) touch.time += (60-touch.time) * 0.1;
-    if(!touch.down) touch.time *= 0.9;
+    function solidRect(ctx,x,y,w,h){
+        ctx.beginPath();
+        ctx.fillRect(x,y,w,h);
+    }
 
-    for (var i = 0; i < blobs.length; i++) {
-        var blob = blobs[i];
-        blob.update();
-        if(touch.down == true){
+
+    function Touch( canvas ){
+        this.down = false;
+        this.x = 0;
+        this.y = 0;
+        this.time = 0;
+        var vel = 0;
+
+        this.update = function(){
+            vel += ( (this.down ? 60 : 0) - this.time) * 0.05;
+            this.time += vel;
+            vel *= 0.8;
+        }
+
+        var _this = this;
+
+        this.touchDown = function(e){
+            e.preventDefault();
+            touch.down = true;
+            touch.touchXY(e);
+        }
+
+        this.touchXY = function(e){
+            e.preventDefault();
+            touch.x = e.pageX;
+            touch.y = e.pageY;
+        }
+
+        this.touchUp = function(e){
+            e.preventDefault();
+            touch.down = false;
+        }
+
+        canvas.addEventListener("mousedown",_this.touchDown,false);
+        canvas.addEventListener("mousemove",_this.touchXY,true);
+        canvas.addEventListener("mouseup"  ,_this.touchUp,false);
+    }
+
+    function Blob(x,y,ax,ay){
+        this.hx = x;
+        this.hy = y;
+        this.x = random(0,ax);
+        this.y = random(0,ay);
+        this.r = options.particleSize + random(-options.particleSizeRandomness,options.particleSizeRandomness);
+        this.speed = random(0.015,0.03) * 2;
+
+        this.off = this.hx * 0.01 + this.hy * 0.01 + random(-1,1);
+        this.halfr = this.r * 0.5;
+
+        this.update = function(){
+            this.x += (this.hx - this.x) * this.speed;
+            this.y += (this.hy - this.y) * this.speed;
+            var r = this.r + sin(this.off + frameCount) * this.halfr;
+            var halfr = r / 2;
+            solidRect(context, this.x-halfr, this.y-halfr, r,   r  );
+        }
+    }
+
+    function update(){
+        updateLoop = webkitRequestAnimationFrame(update);
+        frameCount += options.shimmerRate;
+
+        context.clearRect(0,0,1024,768);
+
+        touch.update();
+
+        for (var i = 0; i < blobs.length; i++) {
+            var blob = blobs[i];
+            blob.update();
             var d = distance(blob.x,blob.y,touch.x,touch.y)
             if(d < touch.time){
                 var a = angle(blob.x,blob.y,touch.x,touch.y);
                 blob.x -= cos(a) * (touch.time-d);
                 blob.y -= sin(a) * (touch.time-d);
             }
-        }
-    };
-}
+        };
 
-function touchDown(e){
-    e.preventDefault();
-    touch.down = true;
-    touchXY(e);
-}
-
-function touchXY(e){
-    e.preventDefault();
-    touch.x = e.pageX;
-    touch.y = e.pageY;
-
-}
-
-function touchUp(e){
-    e.preventDefault();
-    touch.down = false;
-}
-
-function init(){
-    background = element("background");
-
-    canvas.width = 1024;
-    canvas.height = 768;
-
-
-    var imageWidth = text ? 1024 : image.width;
-    var imageHeight = text ? 768 : image.height;
-
-
-
-    var tempcanvas = document.createElement("canvas");
-    tempcanvas.width = imageWidth;
-    tempcanvas.height = imageHeight;
-
-
-    var tempcontext = tempcanvas.getContext('2d');
-    tempcontext.drawImage(image,0,0)
-
-
-    //
-    if( text ){
-        tempcontext.fillStyle = "white";
-        tempcontext.fillRect(0,0,imageWidth,imageHeight)
-        tempcontext.font = "280px Arial Black"
-        tempcontext.fillStyle = "black";
-        tempcontext.fillText("hello",200,250);
     }
 
-    var imageData = tempcontext.getImageData(0,0,imageWidth, imageHeight);
+    shimmer.preset = {}
+    shimmer.preset.straight = {
+            color : 'rgba(255,150,50,0.08)',
+            withText : false,
+            particleSize : 5,
+            particleSizeRandomness : 0,
+            particleDensity : 45,
+            particleLocationRandomness : 0,
+            shimmerRate : 0.05,
+            returnSpeed : 0.25
+        }
 
+    shimmer.init = function( wrapper, customOptions ){
 
-
-
-    context.fillStyle = 'black';
-    context.fillRect(0,0,canvas.width,canvas.height)
-    // blendFunction(context,"lighter");
-
-
-
-    for(var i = 2; i < imageData.data.length; i+=4*round(random(25,50))){
-        // if(i % (image.width*4) <= 7){
-        //     // i += (image.width*4) * 8;
-        // }
-        //console.log(imageData.data[i])
-        if(imageData.data[i] < 50){
-
-            var x = Math.floor(i/4) % imageWidth;
-            var y = Math.floor(i/4) / imageHeight;
-            if(!text){
-                x*=0.7;
-                y*=0.25;
-                x+=30;
-                y+=200;
+        var defaults = {
+                color : 'rgba(255,150,50,0.08)',
+                withText : false,
+                particleSize : 25,
+                particleSizeRandomness : 5,
+                particleDensity : 45,
+                particleLocationRandomness : 15,
+                shimmerRate : 0.1,
+                returnSpeed : 0.25
             }
+        options = extend({}, defaults, customOptions || {});
 
-            // x*=3.2;
-            // y*=2;
-            // x+=30;
-            // y+=50;
-            blobs.push(new Blob(x,y));
+        canvas = document.createElement("canvas");
+        canvas.width = wrapper.offsetWidth;
+        canvas.height = wrapper.offsetHeight;
+        context = canvas.getContext('2d');
+        blendFunction(context,"lighter")
+        context.fillStyle = options.color;
+        wrapper.appendChild(canvas);
+
+        touch = new Touch(canvas);
+
+        if( !options.widthText ){
+            image = new Image();
+            image.src = 'images/liff.jpg';
+            image.onload = function(){ init( image.width, image.height ) };
+        } else {
+            init( canvas.width, canvas.height );
         }
+
     }
 
-    console.log(blobs.length)
-    blendFunction(context,"lighter")
-    //context.fillStyle = 'rgba(255,150,50,0.6)'
-    context.fillStyle = 'rgba(55,150,100,0.6)'
 
-    canvas.addEventListener("mousedown",touchDown,false);
-    canvas.addEventListener("mousemove",touchXY,true);
-    canvas.addEventListener("mouseup",touchUp,false);
+    function init( width, height ){
 
-    update();
+        var tempcanvas = document.createElement("canvas");
+        tempcanvas.width = width;
+        tempcanvas.height = height;
+        var tempcontext = tempcanvas.getContext('2d');
 
-}
+        if( options.withText ){
+            tempcontext.fillStyle = "white";
+            tempcontext.fillRect(0,0,width,height)
+            tempcontext.font = "280px Arial Black"
+            tempcontext.fillStyle = "black";
+            tempcontext.fillText("hello",200,250);
+        } else {
+            tempcontext.drawImage(image,0,0)
+        }
+
+        var imageData = tempcontext.getImageData(0,0,width,height);
+
+        var dw = canvas.width / width;
+        var dh = (height / width) * dw;
+
+        for(var i = 2; i < imageData.data.length; i += 4 * round( options.particleDensity + random(-options.particleLocationRandomness,options.particleLocationRandomness) )){
+            if(imageData.data[i] < 50){
+
+                var x = Math.floor(i/4) % width;
+                var y = Math.floor(i/4) / height;
+                if(!options.withText){
+                    x *= dw;
+                    y *= dh;
+                }
+
+                blobs.push(new Blob(x,y,canvas.width,canvas.height));
+            }
+        }
+
+
+        update();
+
+    }
+
+
+    return shimmer;
+}());
+
 
 window.onload = function(){
 
 
 
-
-    canvas = element("canvas");
-    context = canvas.getContext('2d');
-
     //PIX.getColour('images/hey.jpg',150,105)
+    SHIMMER.init( element("background"),
+        SHIMMER.preset.straight
+    );
 
-    image = new Image();
-    image.src = 'images/liff.jpg';
-    image.onload = init;
 
-    // init();
 }

@@ -3,9 +3,6 @@ function rgb(r,g,b){
   return 'rgba(' + Math.round(r) + ',' + Math.round(g) + ',' + Math.round(b) + ', 1.0)';
 }
 
-function distance(x1, y1, x2, y2) {
-  return Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2));
-}
 
 function line(ctx, x1,y1,x2,y2){
   ctx.beginPath();
@@ -51,10 +48,6 @@ function strokedRect(ctx,x,y,w,h){
   ctx.strokeRect(x,y,w,h);
 }
 
-function solidRect(ctx,x,y,w,h){
-  ctx.beginPath();
-  ctx.fillRect(x,y,w,h);
-}
 
 function sin(count,mult,offset){
   return Math.sin(count) * mult + offset;
