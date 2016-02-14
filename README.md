@@ -1,13 +1,19 @@
 # shimmer effect for canvas
 
-Interactive shimmer-type effect on custom text or monochrome image input.
+Interactive shimmer-type effect based on monochrome image input.
+
+[See Live Demo Here via GitHub Pages](http://amputek.github.io/shimmer.js/)
+
+
+![alt text](https://github.com/amputek/shimmer.js/blob/master/img/esquire.jpg "Poopie")
+
 
 ---
 
 ## How to Use
 
-
-Use ```SHIMMER.init()``` in your window.onload. The init function takes 3 parameters:
+Reference shimmer.js in your html file.
+Use ```SHIMMER.init()``` in ```window.onload```. The function takes 3 parameters:
 
 | Parameter | Example |
 |-----------|---------|
