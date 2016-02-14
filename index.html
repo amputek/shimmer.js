@@ -6,7 +6,7 @@
                 position: absolute;
             	left: 0;
             	top:  0;
-            	width: 1024px;
+            	width: 768px;
             	height: 768px;
                 background: black;
                 -webkit-transform: translate3d(0,0,0);
@@ -16,7 +16,10 @@
         <script type="text/javascript" src="src/shimmer.js"></script>
         <script>
             window.onload = function(){
-                SHIMMER.init( document.getElementById("wrapper"), 'img/liff.jpg' );
+                SHIMMER.init( document.getElementById("wrapper"), 'img/github.png', {
+                    particleDensity: 20,
+                    particleSize: 20
+                });
             }
         </script>
     </head>

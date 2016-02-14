@@ -5,7 +5,9 @@ Interactive shimmer-type effect based on monochrome image input.
 [See Live Demo Here via GitHub Pages](http://amputek.github.io/shimmer.js/)
 
 
-![alt text](https://github.com/amputek/shimmer.js/blob/master/img/esquire.jpg "Poopie")
+![alt text](https://github.com/amputek/shimmer.js/blob/master/img/github.png "Reference")
+
+![alt text](https://github.com/amputek/shimmer.js/blob/master/img/shimmer.png "Refernece")
 
 
 ---
