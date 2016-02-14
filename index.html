@@ -1,14 +1,26 @@
 <html>
     <head>
         <title>Shimmer Example</title>
-        <link href="style.css" rel="stylesheet" type="text/css" media="screen" />
-        <script type="text/javascript" src="js/canvas-functions.js"></script>
-        <script type="text/javascript" src="js/pix.js"></script>
-        <script type="text/javascript" src="js/interact.js"></script>
+        <style>
+            #wrapper{
+                position: absolute;
+            	left: 0;
+            	top:  0;
+            	width: 1024px;
+            	height: 768px;
+                background: black;
+                -webkit-transform: translate3d(0,0,0);
+                -webkit-user-select: none;
+            }
+        </style>
+        <script type="text/javascript" src="src/shimmer.js"></script>
+        <script>
+            window.onload = function(){
+                SHIMMER.init( document.getElementById("wrapper"), 'img/liff.jpg' );
+            }
+        </script>
     </head>
     <body>
-        <div id = "background">
-
-        </div>
+        <div id = "wrapper"></div>
     </body>
 </html>

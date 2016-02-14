@@ -1,27 +1,31 @@
-
-function extend(){
-    for(var i=1; i<arguments.length; i++)
-        for(var key in arguments[i])
-            if(arguments[i].hasOwnProperty(key))
-                arguments[0][key] = arguments[i][key];
-    return arguments[0];
-}
-
-
 var SHIMMER = (function( ){
 
     var frameCount = 0;
-    var blobs = [];
+    var particles = [];
     var canvas;
     var context;
-    var updateLoop;
     var touch;
-    var image;
     var shimmer = {};
     var options = {};
 
-    function distance(x1, y1, x2, y2) {
-        return Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2));
+    function extend(){
+        for(var i=1; i<arguments.length; i++)
+            for(var key in arguments[i])
+                if(arguments[i].hasOwnProperty(key))
+                    arguments[0][key] = arguments[i][key];
+        return arguments[0];
+    }
+
+    function distance(a,b) {
+        return Math.sqrt(Math.pow(a.x - b.x, 2) + Math.pow(a.y - b.y, 2));
+    }
+
+    function random(a,b){
+        return (Math.random() * (b-a)) + a;
+    }
+
+    function angle(a,b){
+        return Math.atan2(b.y-a.y,b.x-a.x);
     }
 
     function solidRect(ctx,x,y,w,h){
@@ -29,6 +33,9 @@ var SHIMMER = (function( ){
         ctx.fillRect(x,y,w,h);
     }
 
+    function blendFunction(ctx, operator){
+        ctx.globalCompositeOperation = operator;
+    }
 
     function Touch( canvas ){
         this.down = false;
@@ -67,7 +74,7 @@ var SHIMMER = (function( ){
         canvas.addEventListener("mouseup"  ,_this.touchUp,false);
     }
 
-    function Blob(x,y,ax,ay){
+    function Particle(x,y,ax,ay){
         this.hx = x;
         this.hy = y;
         this.x = random(0,ax);
@@ -81,28 +88,28 @@ var SHIMMER = (function( ){
         this.update = function(){
             this.x += (this.hx - this.x) * this.speed;
             this.y += (this.hy - this.y) * this.speed;
-            var r = this.r + sin(this.off + frameCount) * this.halfr;
+            var r = this.r + Math.sin(this.off + frameCount) * this.halfr;
             var halfr = r / 2;
             solidRect(context, this.x-halfr, this.y-halfr, r,   r  );
         }
     }
 
     function update(){
-        updateLoop = webkitRequestAnimationFrame(update);
+        webkitRequestAnimationFrame(update);
         frameCount += options.shimmerRate;
 
-        context.clearRect(0,0,1024,768);
+        context.clearRect(0,0,canvas.width,canvas.height);
 
         touch.update();
 
-        for (var i = 0; i < blobs.length; i++) {
-            var blob = blobs[i];
-            blob.update();
-            var d = distance(blob.x,blob.y,touch.x,touch.y)
+        for (var i = 0; i < particles.length; i++) {
+            var Particle = particles[i];
+            Particle.update();
+            var d = distance(Particle,touch)
             if(d < touch.time){
-                var a = angle(blob.x,blob.y,touch.x,touch.y);
-                blob.x -= cos(a) * (touch.time-d);
-                blob.y -= sin(a) * (touch.time-d);
+                var a = angle(Particle,touch);
+                Particle.x -= Math.cos(a) * (touch.time-d);
+                Particle.y -= Math.sin(a) * (touch.time-d);
             }
         };
 
@@ -111,7 +118,6 @@ var SHIMMER = (function( ){
     shimmer.preset = {}
     shimmer.preset.straight = {
             color : 'rgba(255,150,50,0.08)',
-            withText : false,
             particleSize : 5,
             particleSizeRandomness : 0,
             particleDensity : 45,
@@ -120,14 +126,13 @@ var SHIMMER = (function( ){
             returnSpeed : 0.25
         }
 
-    shimmer.init = function( wrapper, customOptions ){
+    shimmer.init = function( wrapper, imgSrc, customOptions ){
 
         var defaults = {
                 color : 'rgba(255,150,50,0.08)',
-                withText : false,
-                particleSize : 25,
+                particleSize : 15,
                 particleSizeRandomness : 5,
-                particleDensity : 45,
+                particleDensity : 30,
                 particleLocationRandomness : 15,
                 shimmerRate : 0.1,
                 returnSpeed : 0.25
@@ -144,71 +149,49 @@ var SHIMMER = (function( ){
 
         touch = new Touch(canvas);
 
-        if( !options.widthText ){
-            image = new Image();
-            image.src = 'images/liff.jpg';
-            image.onload = function(){ init( image.width, image.height ) };
-        } else {
-            init( canvas.width, canvas.height );
-        }
+        var image = new Image();
+        image.src = imgSrc;
+        image.onload = function(){ createParticles( image, image.width, image.height ) };
+
 
     }
 
 
-    function init( width, height ){
+    function createParticles( image, width, height ){
 
         var tempcanvas = document.createElement("canvas");
         tempcanvas.width = width;
         tempcanvas.height = height;
         var tempcontext = tempcanvas.getContext('2d');
 
-        if( options.withText ){
-            tempcontext.fillStyle = "white";
-            tempcontext.fillRect(0,0,width,height)
-            tempcontext.font = "280px Arial Black"
-            tempcontext.fillStyle = "black";
-            tempcontext.fillText("hello",200,250);
-        } else {
-            tempcontext.drawImage(image,0,0)
-        }
+        tempcontext.drawImage(image,0,0)
 
         var imageData = tempcontext.getImageData(0,0,width,height);
 
         var dw = canvas.width / width;
         var dh = (height / width) * dw;
 
-        for(var i = 2; i < imageData.data.length; i += 4 * round( options.particleDensity + random(-options.particleLocationRandomness,options.particleLocationRandomness) )){
+        for(var i = 2; i < imageData.data.length; i += 4 * Math.round( options.particleDensity + random(-options.particleLocationRandomness,options.particleLocationRandomness) )){
             if(imageData.data[i] < 50){
 
                 var x = Math.floor(i/4) % width;
                 var y = Math.floor(i/4) / height;
-                if(!options.withText){
-                    x *= dw;
-                    y *= dh;
-                }
-
-                blobs.push(new Blob(x,y,canvas.width,canvas.height));
+                x *= dw;
+                y *= dh;
+                particles.push(new Particle(x,y,canvas.width,canvas.height));
             }
         }
 
-
         update();
-
     }
 
-
     return shimmer;
+
 }());
 
 
-window.onload = function(){
-
-
-
-    //PIX.getColour('images/hey.jpg',150,105)
-    SHIMMER.init( element("background"),
-        SHIMMER.preset.straight
-    );
-
-
-}
+// tempcontext.fillStyle = "white";
+// tempcontext.fillRect(0,0,width,height)
+// tempcontext.font = "280px Arial Black"
+// tempcontext.fillStyle = "black";
+// tempcontext.fillText("hello",200,250);
