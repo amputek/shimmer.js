@@ -15,13 +15,13 @@ Interactive shimmer-type effect based on monochrome image input.
 ## How to Use
 
 Reference shimmer.js in your html file.
-Use ```SHIMMER.init()``` in ```window.onload```. The function takes 3 parameters:
+Use ```SHIMMER.init( dom, file, options )``` in ```window.onload```. The function takes 3 parameters:
 
 | Parameter | Example |
 |-----------|---------|
 | wrapper DOM element | ``` document.getElementById("wrapper")``` |
 | reference image file for particles locations | ```'img/myImage.jpg'``` |
-| optional parameters for changing the shimmer | {} |
+| optional parameters object for changing the shimmer | { particleSize: 20, shimmerRate: 0.3 } |
 
 #### Options
 

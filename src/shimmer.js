@@ -132,7 +132,7 @@ var SHIMMER = (function( ){
                 color : 'rgba(255,150,50,0.08)',
                 particleSize : 15,
                 particleSizeRandomness : 5,
-                particleDensity : 60,
+                particleDensity : 30,
                 particleLocationRandomness : 15,
                 shimmerRate : 0.1,
                 returnSpeed : 0.25
